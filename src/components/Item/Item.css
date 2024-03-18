@@ -1,0 +1,51 @@
+.list__card {
+    display: flex;  
+    align-items: stretch;
+    column-gap: 20px;
+    width: 450px;
+    height: 280px;
+    background-color: white;
+    box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, .15);
+}
+
+.card__image {
+    width: 185px;
+    height: 280px;
+}
+.card__title {
+    display: flex;
+    row-gap: 10px;
+    flex-direction: column;
+    width: 220px;
+    margin-top: 10px;
+    padding-right: 25px;
+}
+
+.title__name {
+    font-size: 20px;
+    line-height: 28px;
+    letter-spacing: 0em;
+    text-align: left;
+}
+
+.title__date {
+    font-size: 12px;
+    line-height: 22px;
+    letter-spacing: 0px;
+    text-align: left;
+}
+
+.title__genre {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 15px;
+    letter-spacing: 0em;
+    text-align: left;
+}
+
+.title__description {
+    font-size: 12px;
+    line-height: 22px;
+    letter-spacing: 0px;
+    text-align: left;    
+}
