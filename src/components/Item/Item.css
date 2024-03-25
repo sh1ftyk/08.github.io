@@ -1,11 +1,11 @@
 .list__card {
     display: flex;  
-    align-items: stretch;
     column-gap: 20px;
     width: 450px;
     height: 280px;
+    margin: auto;
     background-color: white;
-    box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, .15);
+    box-shadow: 3px 3px 5px 0 rgba(0, 0, 0, .08);
 }
 
 .card__image {
@@ -16,7 +16,7 @@
     display: flex;
     row-gap: 10px;
     flex-direction: column;
-    width: 220px;
+    max-width: 220px;
     margin-top: 10px;
     padding-right: 25px;
 }
@@ -47,5 +47,7 @@
     font-size: 12px;
     line-height: 22px;
     letter-spacing: 0px;
-    text-align: left;    
+    text-align: left; 
+    margin-bottom: 20px;
+    overflow: hidden;   
 }

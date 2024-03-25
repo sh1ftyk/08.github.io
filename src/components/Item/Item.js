@@ -5,10 +5,10 @@ import './Item.css'
 
 import poster from '../../img/noImg.jpg'
 
-const Item = (props) => {
+const Item = ({ movies }) => {
   return (
     <>
-      {props.movies.map((movie) => {
+      {movies.map((movie) => {
         const formatDescription = (string, maxLength) => {
           if (!string) {
             // eslint-disable-next-line quotes
