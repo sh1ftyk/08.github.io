@@ -5,7 +5,16 @@
 
 }
 
+.root {
+    display: flex;
+    flex-direction: column;
+}
+
 .wrapper {
     display: flex;
     flex-direction: column;
+}
+
+.alert--space {
+    margin: 20px auto;
 }

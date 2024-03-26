@@ -12,7 +12,6 @@ const App = () => {
   const [movies, setMovies] = useState([])
   const [dataLoading, setDataLoading] = useState(false)
   const [searchValue, setSearchValue] = useState('')
-  const [totalPages, setTotalPages] = useState(1)
   const [totalItems, setTotalItems] = useState(1)
 
   const handleChange = (e) => {
@@ -37,7 +36,6 @@ const App = () => {
       const response = await fetch(url, options)
       const responseJson = await response.json()
       setMovies(responseJson.results)
-      setTotalPages(responseJson.total_pages)
       setTotalItems(responseJson.total_results)
     } catch (err) {
       console.log(err)
@@ -49,7 +47,7 @@ const App = () => {
   const debounceGetMovieRequest = useCallback(debounce(getMovieRequest, 1000), [])
 
   useEffect(() => {
-    debounceGetMovieRequest(searchValue, totalPages)
+    debounceGetMovieRequest(searchValue, 1)
   }, [searchValue])
 
   return (
@@ -58,34 +56,34 @@ const App = () => {
         <div className="wrapper">
           <SearchBar value={searchValue} onChange={handleChange} />
           {movies.length < 1 ? (
-            <Space
-              direction="vertical"
-              style={{
-                width: '100%',
-                marginTop: '20px',
-                textAlign: 'center',
-              }}
-            >
-              <Alert message="Nothing Was Found" description="Check your request." type="info" />
+            <Space className="alert--space" direction="vertical">
+              <Alert
+                className="alert alert--search"
+                message="Nothing Was Found"
+                description="Check your request."
+                type="info"
+                closable={true}
+                showIcon
+              />
             </Space>
           ) : (
-            <React.Fragment>
+            <Fragment>
               <ItemList dataLoading={dataLoading} movies={movies} />
               <PaginationSlider total={totalItems} onChange={getMovieRequest} searchValue={searchValue} />
-            </React.Fragment>
+            </Fragment>
           )}
         </div>
       </Online>
       <Offline>
-        <Space
-          direction="vertical"
-          style={{
-            width: '100%',
-            marginTop: '300px',
-            textAlign: 'center',
-          }}
-        >
-          <Alert message="Connection Problem" description="Check your internet connection." type="error" />
+        <Space className="alert--space" direction="vertical">
+          <Alert
+            className="alert alert--connection"
+            message="Connection Problem"
+            description="Check your internet connection."
+            type="error"
+            closable={true}
+            showIcon
+          />
         </Space>
       </Offline>
     </Fragment>
