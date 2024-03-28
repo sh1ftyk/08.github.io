@@ -1,6 +1,5 @@
 .header__form {
     display: flex;
-    margin: 20px 55px;
-    height: 40px;
-    
+    margin: 20px 55px; 
+    justify-content: center;   
 }

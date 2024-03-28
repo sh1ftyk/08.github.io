@@ -3,13 +3,14 @@ import { Pagination } from 'antd'
 
 import './PaginationSlider.css'
 
-const PaginationSlider = ({ total, onChange, searchValue }) => {
+const PaginationSlider = ({ total, currentPage, setCurrentPage }) => {
   return (
     <Pagination
       className="container__pagination pagination"
-      defaultCurrent={1}
+      current={currentPage}
       defaultPageSize={20}
-      total={total}
+      defaultCurrent={1}
+      total={total > 10000 ? 10000 : total}
       showTotal={(total, range) => {
         if (total === 1) {
           return `${total} movie found`
@@ -17,7 +18,7 @@ const PaginationSlider = ({ total, onChange, searchValue }) => {
           return `${range[0]} - ${range[1]} of ${total} movies found`
         }
       }}
-      onChange={(page) => onChange(searchValue, page)}
+      onChange={setCurrentPage}
       showSizeChanger={false}
     />
   )

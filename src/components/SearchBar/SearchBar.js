@@ -16,6 +16,7 @@ const SearchBar = ({ value, onChange }) => {
         placeholder="Type to Search..."
         value={value}
         onChange={onChange}
+        size="large"
         autoFocus
         allowClear
       />

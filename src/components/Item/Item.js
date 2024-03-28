@@ -1,58 +1,34 @@
 import React from 'react'
-import { format, parseISO } from 'date-fns'
+import { Card, Typography, Tag } from 'antd'
 
 import './Item.css'
 
-import poster from '../../img/noImg.jpg'
-
-const Item = ({ movies }) => {
-  return (
+const { Text } = Typography
+const Item = ({ movie, img, date, description, genres = [] }) => {
+  const movieGenre = (
     <>
-      {movies.map((movie) => {
-        const formatDescription = (string, maxLength) => {
-          if (!string) {
-            // eslint-disable-next-line quotes
-            string = "The film doesn't have a description yet"
-            return string
-          }
-          if (string.length < maxLength) {
-            return string + '...'
-          } else {
-            let trimmedOverview = string.substr(0, maxLength)
-            return trimmedOverview.substr(0, Math.min(trimmedOverview.length, trimmedOverview.lastIndexOf(' '))) + '...'
-          }
-        }
-
-        const formatImg = (url) => {
-          const baseImgUrl = 'https://image.tmdb.org/t/p/w500'
-          if (url === null) {
-            url = poster
-            return url
-          } else {
-            return baseImgUrl + url
-          }
-        }
-
-        const formatDate = (date) => {
-          if (!date) {
-            return 'Release date are unknown'
-          } else {
-            return format(parseISO(date), 'MMMM d, y')
-          }
-        }
+      {genres.map((genre) => {
         return (
-          <li key={movie.id} className="list__card card">
-            <img className="card__image" src={formatImg(movie.poster_path)} alt="Movie Poster" />
-            <div className="card__title title">
-              <span className="title__name">{movie.title}</span>
-              <span className="title__date">{formatDate(movie.release_date)}</span>
-              <span className="title__genre">Genre</span>
-              <span className="title__description">{formatDescription(movie.overview, 100)}</span>
-            </div>
-          </li>
+          <Tag className="genre__tag" key={genre.id}>
+            {genre.name}
+          </Tag>
         )
       })}
     </>
+  )
+  return (
+    <Card hoverable key={movie.id}>
+      <img className="card__image" src={img} alt="Movie Poster" />
+      <div className="card__title">{movie.title}</div>
+      <span className="card__popularity">TEST</span>
+      <Text type="secondary" className="title__date">
+        {date}
+      </Text>
+      <div className="title__genre genre">{movieGenre}</div>
+
+      <Text className="title__description">{description}</Text>
+      <div>TEST STARS</div>
+    </Card>
   )
 }
 

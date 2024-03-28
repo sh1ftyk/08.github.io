@@ -1,91 +1,121 @@
-import React, { Fragment, useState, useEffect, useCallback } from 'react'
+import React, { Fragment, useState, useEffect, useMemo } from 'react'
 import { Online, Offline } from 'react-detect-offline'
-import { Alert, Space } from 'antd'
+import { Alert, Layout, Space, Tabs, Spin, Empty } from 'antd'
 import { debounce } from 'lodash'
+
 import './App.css'
 
+import MovieService from '../../services/MovieService'
 import SearchBar from '../SearchBar/SearchBar'
 import ItemList from '../ItemList/ItemList'
 import PaginationSlider from '../PaginationSlider/PaginationSlider'
 
+const { TabPane } = Tabs
+const { Content } = Layout
+
+const movieService = new MovieService()
 const App = () => {
   const [movies, setMovies] = useState([])
-  const [dataLoading, setDataLoading] = useState(false)
+  const [genres, setGenres] = useState([])
+  const [dataLoading, setDataLoading] = useState(true)
   const [searchValue, setSearchValue] = useState('')
   const [totalItems, setTotalItems] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const handleChange = (e) => {
     setSearchValue(e.target.value)
   }
 
-  const getMovieRequest = async (input, page) => {
-    if (page > 110) {
-      return null
-    }
-    const url = `https://api.themoviedb.org/3/search/movie?query=${input}&include_adult=false&language=en-US&page=${page}`
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization:
-          'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlNjBjM2JkNjYyMjNkNzBmNzgxZmVmMTY5NzI2NmQ3MiIsInN1YiI6IjY1ZjZlZGI4NTk0Yzk0MDE3YzM4MDI3NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.tSf3eYNq1cBFr7JSvqeiatdhTp49ZCcBdirJ31qJwAs',
-      },
-    }
+  const getPopularMovies = async (token, page) => {
+    const movies = await movieService.getPopularMovies(token, page)
+    setMovies(movies.results)
+    setTotalItems(movies.total_results)
+    setCurrentPage(movies.page)
+  }
+
+  const searchMovies = async (name, page) => {
+    const movies = await movieService.searchMovies(name, page)
+    setMovies(movies.results)
+    setTotalItems(movies.total_results)
+    setCurrentPage(movies.page)
+  }
+
+  const getGenresList = async () => {
+    const genres = await movieService.getGenresList()
+    setGenres(genres.genres)
+  }
+
+  const getMoviesList = async (name, page) => {
     setDataLoading(true)
-    try {
-      const response = await fetch(url, options)
-      const responseJson = await response.json()
-      setMovies(responseJson.results)
-      setTotalItems(responseJson.total_results)
-    } catch (err) {
-      console.log(err)
+    getGenresList()
+    if (name) {
+      await searchMovies(name, page)
+    } else {
+      await getPopularMovies(page)
     }
 
     setDataLoading(false)
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
-  const debounceGetMovieRequest = useCallback(debounce(getMovieRequest, 1000), [])
+  const searchMovieCallback = useMemo(() => debounce(handleChange, 1000), [])
+  useEffect(() => {
+    getMoviesList(searchValue, 1)
+  }, [searchValue])
 
   useEffect(() => {
-    debounceGetMovieRequest(searchValue, 1)
-  }, [searchValue])
+    getMoviesList(searchValue, currentPage)
+  }, [currentPage])
+
+  const spin =
+    dataLoading && searchValue.length !== 0 ? (
+      <Spin size="large" style={{ marginTop: '150px' }} />
+    ) : (
+      <ItemList movies={movies} genres={genres} />
+    )
+  const empty =
+    movies.length === 0 && !dataLoading ? (
+      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Movies not Found" />
+    ) : null
+  const pagination =
+    movies.length !== 0 && !dataLoading ? (
+      <PaginationSlider total={totalItems} currentPage={currentPage} setCurrentPage={setCurrentPage} />
+    ) : null
+  const internetProblem = (
+    <Alert
+      message="Connection Problem"
+      description="Check your internet connection."
+      type="error"
+      closable={true}
+      showIcon
+      banner={true}
+    />
+  )
 
   return (
     <Fragment>
       <Online>
         <div className="wrapper">
-          <SearchBar value={searchValue} onChange={handleChange} />
-          {movies.length < 1 ? (
-            <Space className="alert--space" direction="vertical">
-              <Alert
-                className="alert alert--search"
-                message="Nothing Was Found"
-                description="Check your request."
-                type="info"
-                closable={true}
-                showIcon
-              />
-            </Space>
-          ) : (
-            <Fragment>
-              <ItemList dataLoading={dataLoading} movies={movies} />
-              <PaginationSlider total={totalItems} onChange={getMovieRequest} searchValue={searchValue} />
-            </Fragment>
-          )}
+          <Layout>
+            <Content>
+              <Tabs defaultActiveKey="1" centered>
+                <TabPane className="wrapper__tab" tab="Search" key="1">
+                  <SearchBar onChange={searchMovieCallback} />
+                  <Space direction="vertical" align="center">
+                    {spin}
+                    {empty}
+                    {pagination}
+                  </Space>
+                </TabPane>
+                <TabPane tab="Rated" key="2">
+                  2nd TAB PANE Content
+                </TabPane>
+              </Tabs>
+            </Content>
+          </Layout>
         </div>
       </Online>
-      <Offline>
-        <Space className="alert--space" direction="vertical">
-          <Alert
-            className="alert alert--connection"
-            message="Connection Problem"
-            description="Check your internet connection."
-            type="error"
-            closable={true}
-            showIcon
-          />
-        </Space>
-      </Offline>
+      <Offline>{internetProblem}</Offline>
     </Fragment>
   )
 }
