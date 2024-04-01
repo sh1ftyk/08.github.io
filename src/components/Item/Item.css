@@ -1,16 +1,16 @@
 div .ant-card-body {
     display: grid;
     grid-column-gap: 5px;
-    grid-template-columns: .4fr .6fr;
+    grid-template-columns: .7fr 1fr .1fr;
     background-color: #FFFFFF;
     padding: 10px !important ;
 }
-@media (max-width: 900px ) {
+@media (max-width: 1019.5px ) {
     div .ant-card-body {
-        grid-template-columns: .2fr .8fr;
+        grid-template-columns: .7fr 1fr .1fr;
     }
 }
-@media (max-width: 500px ) {
+@media (max-width: 767.5px ) {
     div .ant-card-body {
         grid-template-columns: .4fr .6fr;
     }
@@ -21,26 +21,25 @@ div .ant-card-body::after {
     display: none;
 }
 
+.ant-card-body {
+    border: 8px;
+}
+
 .card__image {
-    width: 160px;
-    height: 240px;
+    max-width: 100%;
     object-fit: cover;
     grid-row: 1/6;
 }
 
 @media (max-width: 900px ) {
     .card__image {
-        grid-row: 1/5;
+        grid-row: 1/6;
     }
 }
 
 
 @media (max-width: 450px ) {
     .card__image {
-        width: 76px;
-        height: 114px;
-        max-width: 100%;
-        max-height: 100%;
         grid-row: 1/4;
     }
 }
@@ -124,6 +123,7 @@ div .ant-card-body::after {
 @media (max-width: 900px ) {
     .title__description {
         font-size: 12px;
+        margin-bottom: 15px;
 
     }
 }
@@ -132,29 +132,43 @@ div .ant-card-body::after {
     .title__description {
         font-size: 12px;
         grid-column: 1/4;
+        margin-bottom: 0;
     }
 }
 
 ul.ant-rate {
-    grid-column: 2/4;
-    grid-row: 5/6;
+    grid-column: 1/4;
+    grid-row: 6;
     font-size: 100%;
-    align-self: end;
-    justify-self: end;
+    text-align: center;
+    margin-top: 10px
 
 
 }
+
 @media (max-width: 900px ) {
     ul.ant-rate {
-        grid-column: 1/4;
+        grid-column: 2/4;
+        grid-row: 6;
+        font-size: 24px;
+        text-align: center;
+        margin-top: -30px;
+    }
+}
+
+@media (max-width: 767.5px ) {
+    ul.ant-rate {
+        text-align: left;
+        font-size: 20px;
     }
 }
 
 @media (max-width: 450px ) {
     ul.ant-rate {
-
-        font-size: 14px
-
+        grid-column: 1/4;
+        font-size: 22px;
+        text-align: center;
+        margin-top: 10px;
     }
 }
 

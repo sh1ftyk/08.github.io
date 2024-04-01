@@ -2,7 +2,7 @@ import React from 'react'
 import { Input } from 'antd'
 import './SearchBar.css'
 
-const SearchBar = ({ value, onChange }) => {
+const SearchBar = ({ value, searchValue }) => {
   return (
     <form
       className="header__form form"
@@ -15,7 +15,7 @@ const SearchBar = ({ value, onChange }) => {
         type="search"
         placeholder="Type to Search..."
         value={value}
-        onChange={onChange}
+        onChange={searchValue}
         size="large"
         autoFocus
         allowClear

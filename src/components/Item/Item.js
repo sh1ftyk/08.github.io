@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, Typography, Tag } from 'antd'
+import { Card, Typography, Tag, Rate } from 'antd'
 
 import './Item.css'
 
@@ -27,7 +27,7 @@ const Item = ({ movie, img, date, description, genres = [] }) => {
       <div className="title__genre genre">{movieGenre}</div>
 
       <Text className="title__description">{description}</Text>
-      <div>TEST STARS</div>
+      <Rate count={10} />
     </Card>
   )
 }

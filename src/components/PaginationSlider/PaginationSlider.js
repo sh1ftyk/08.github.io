@@ -11,13 +11,6 @@ const PaginationSlider = ({ total, currentPage, setCurrentPage }) => {
       defaultPageSize={20}
       defaultCurrent={1}
       total={total > 10000 ? 10000 : total}
-      showTotal={(total, range) => {
-        if (total === 1) {
-          return `${total} movie found`
-        } else {
-          return `${range[0]} - ${range[1]} of ${total} movies found`
-        }
-      }}
       onChange={setCurrentPage}
       showSizeChanger={false}
     />

@@ -1,4 +1,5 @@
 .container__pagination {
     align-self: center;
     margin-bottom: 20px;
+    word-break: keep-all;
 }
