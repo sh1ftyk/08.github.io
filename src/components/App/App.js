@@ -30,7 +30,7 @@ const App = () => {
 
   const [guestSession, setGuestSession] = useState('')
   const [rateValue, setRateValue] = useState({})
-  console.log(ratedMovies)
+
   console.log(movies)
   const handleSearch = (e) => {
     setSearchValue(e.target.value)

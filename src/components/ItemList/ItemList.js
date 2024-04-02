@@ -51,6 +51,10 @@ const ItemList = ({ movies = [], genres = [], rateMovie }) => {
           }
         }
         const formatPopularity = (popularity) => {
+          if (!popularity) {
+            popularity = 'X'
+            return popularity
+          }
           return popularity.toFixed(1)
         }
 
