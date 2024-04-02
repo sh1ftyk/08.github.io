@@ -29,8 +29,9 @@ const App = () => {
   const [searchValue, setSearchValue] = useState('')
 
   const [guestSession, setGuestSession] = useState('')
-  const [rateValue, setRateValue] = useState([])
-
+  const [rateValue, setRateValue] = useState({})
+  console.log(ratedMovies)
+  console.log(movies)
   const handleSearch = (e) => {
     setSearchValue(e.target.value)
   }
@@ -63,21 +64,25 @@ const App = () => {
     } else {
       await getPopularMovies(page)
     }
+    if (guestSession) {
+      getRatedMovies(guestSession)
+    }
     setDataLoading(false)
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
   const getGuestSession = async () => {
-    const guestId = sessionStorage.getItem('guestId')
-    if (!guestId || guestId === 'undefined' || guestId === null) {
+    let guestId = sessionStorage.getItem('guestId')
+    if (!guestId || guestId === 'undefined' || guestId === null || guestId.length === 0) {
       const newGuestSession = await movieService.guestSession()
       setGuestSession(newGuestSession.guest_session_id)
-      sessionStorage.setItem('guestId', newGuestSession.guest_session_id)
+      guestId = sessionStorage.setItem('guestId', newGuestSession.guest_session_id)
+    } else {
+      setGuestSession(guestId)
     }
-    setGuestSession(guestId)
   }
 
-  const getRatedMovies = async (guestId, page = 1) => {
+  const getRatedMovies = async (guestId = guestSession, page = 1) => {
     const ratedMovies = await movieService.getRatedMovies(guestId, page)
     setRatedMovies(ratedMovies.results)
     setRatedTotalItems(ratedMovies.total_results)
@@ -86,10 +91,13 @@ const App = () => {
 
   const setMovieRating = async (id = 0, value = 0) => {
     const movieRating = await movieService.setMovieRating(id, guestSession, value)
-    sessionStorage.setItem('id', id)
-    sessionStorage.setItem('value', value)
     console.log(movieRating)
     setRateValue({ id: id, value: value })
+  }
+
+  const deleteRatedMovies = async (id = 0, guestId = guestSession) => {
+    const deleteMovieRating = await movieService.deleteMovieRating(id, guestId)
+    console.log(deleteMovieRating)
   }
 
   const searchMovieCallback = useMemo(() => debounce(handleSearch, 1000), [])
@@ -103,18 +111,34 @@ const App = () => {
   }, [currentPage])
 
   useEffect(() => {
-    getRatedMovies(sessionStorage.getItem('guestId'), ratedCurrentPage)
+    if (guestSession) {
+      getRatedMovies(guestSession, ratedCurrentPage)
+    }
+  }, [!dataLoading])
+
+  useEffect(() => {
+    if (guestSession) {
+      getRatedMovies(guestSession, ratedCurrentPage)
+    }
   }, [rateValue])
 
   useEffect(() => {
-    getRatedMovies(sessionStorage.getItem('guestId'), ratedCurrentPage)
+    if (guestSession) {
+      getRatedMovies(guestSession, ratedCurrentPage)
+    }
   }, [ratedCurrentPage])
 
   const spin =
     dataLoading && searchValue.length !== 0 ? (
       <Spin size="large" style={{ marginTop: '150px' }} />
     ) : (
-      <ItemList movies={movies} genres={genres} rateMovie={setMovieRating} rateValue={rateValue.value} />
+      <ItemList
+        movies={movies}
+        genres={genres}
+        rateMovie={setMovieRating}
+        deleteMovie={deleteRatedMovies}
+        rateValue={rateValue.value}
+      />
     )
   const empty =
     movies.length === 0 && !dataLoading ? (
@@ -150,12 +174,12 @@ const App = () => {
                     {pagination}
                   </Space>
                 </TabPane>
-                <TabPane tab="Rated" key="2">
+                <TabPane className="wrapper__tab" tab="Rated" key="2">
                   <Space direction="vertical" align="center">
                     {/* <div>
                       Movie =`ID: {rateValue.id} and Value: {rateValue.value}`
                     </div> */}
-                    {dataLoading && searchValue.length !== 0 ? (
+                    {dataLoading && !ratedMovies ? (
                       <Spin size="large" style={{ marginTop: '150px' }} />
                     ) : (
                       <ItemList
@@ -165,10 +189,10 @@ const App = () => {
                         rateValue={rateValue.value}
                       />
                     )}
-                    {movies.length === 0 && !dataLoading ? (
+                    {(!ratedMovies && !dataLoading) || (ratedMovies && ratedMovies.length === 0) ? (
                       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Rated Movies" />
                     ) : null}
-                    {movies.length !== 0 && !dataLoading ? (
+                    {ratedMovies && ratedMovies.length >= 1 ? (
                       <PaginationSlider
                         total={ratedTotalItems}
                         currentPage={ratedCurrentPage}

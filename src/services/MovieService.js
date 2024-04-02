@@ -13,7 +13,7 @@ export default class MovieService {
   async getDataFromServer(url, options) {
     try {
       const res = await fetch(url, options)
-      if (!res.ok) throw new Error(`${res.status}`)
+      // if (!res.ok) throw new Error(`${res.status}`)
       return await res.json()
     } catch (err) {
       console.error('Trouble with fetch: ', err.message)
