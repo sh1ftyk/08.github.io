@@ -5,7 +5,7 @@ import Item from '../Item/Item'
 import './ItemList.css'
 import poster from '../../img/noImg.jpg'
 
-const ItemList = ({ movies = [], genres = [] }) => {
+const ItemList = ({ movies = [], genres = [], rateMovie }) => {
   return (
     <div className="card__list">
       {movies.map((movie) => {
@@ -50,6 +50,9 @@ const ItemList = ({ movies = [], genres = [] }) => {
             return format(parseISO(date), 'MMMM d, y')
           }
         }
+        const formatPopularity = (popularity) => {
+          return popularity.toFixed(1)
+        }
 
         return (
           <Item
@@ -59,6 +62,11 @@ const ItemList = ({ movies = [], genres = [] }) => {
             date={formatDate(movie.release_date)}
             description={formatDescription(movie.overview, 100)}
             genres={formatGenre()}
+            popularity={formatPopularity(movie.vote_average)}
+            rateMovie={rateMovie}
+            rate={movie.rating}
+            rateValue={movie.rating}
+            movieId={movie.id}
           />
         )
       })}

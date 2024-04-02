@@ -16,13 +16,20 @@ const { Content } = Layout
 const movieService = new MovieService()
 const App = () => {
   const [movies, setMovies] = useState([])
-  const [genres, setGenres] = useState([])
-  const [dataLoading, setDataLoading] = useState(true)
-  const [searchValue, setSearchValue] = useState('')
   const [totalItems, setTotalItems] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
+
+  const [ratedMovies, setRatedMovies] = useState([])
+  const [ratedTotalItems, setRatedTotalItems] = useState(1)
+  const [ratedCurrentPage, setRatedCurrentPage] = useState(1)
+
+  const [genres, setGenres] = useState([])
+
+  const [dataLoading, setDataLoading] = useState(true)
+  const [searchValue, setSearchValue] = useState('')
+
   const [guestSession, setGuestSession] = useState('')
-  const [rateMovie, setRateMovie] = useState('')
+  const [rateValue, setRateValue] = useState([])
 
   const handleSearch = (e) => {
     setSearchValue(e.target.value)
@@ -56,28 +63,37 @@ const App = () => {
     } else {
       await getPopularMovies(page)
     }
-    setMovieRating()
     setDataLoading(false)
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
   const getGuestSession = async () => {
-    if (!sessionStorage.getItem('guestId')) {
+    const guestId = sessionStorage.getItem('guestId')
+    if (!guestId || guestId === 'undefined' || guestId === null) {
       const newGuestSession = await movieService.guestSession()
-      sessionStorage.setItem('guestId', newGuestSession.guest_session_id)
       setGuestSession(newGuestSession.guest_session_id)
-    } else {
-      setGuestSession(sessionStorage.getItem('guestId'))
+      sessionStorage.setItem('guestId', newGuestSession.guest_session_id)
     }
-  }
-  const setMovieRating = async () => {
-    const movieRating = await movieService.setMovieRating(45621, sessionStorage.getItem('guestId'), 5)
-    setRateMovie(movieRating)
+    setGuestSession(guestId)
   }
 
-  console.log(guestSession, rateMovie)
+  const getRatedMovies = async (guestId, page = 1) => {
+    const ratedMovies = await movieService.getRatedMovies(guestId, page)
+    setRatedMovies(ratedMovies.results)
+    setRatedTotalItems(ratedMovies.total_results)
+    setRatedCurrentPage(ratedMovies.page)
+  }
+
+  const setMovieRating = async (id = 0, value = 0) => {
+    const movieRating = await movieService.setMovieRating(id, guestSession, value)
+    sessionStorage.setItem('id', id)
+    sessionStorage.setItem('value', value)
+    console.log(movieRating)
+    setRateValue({ id: id, value: value })
+  }
 
   const searchMovieCallback = useMemo(() => debounce(handleSearch, 1000), [])
+
   useEffect(() => {
     getMoviesList(searchValue, 1)
   }, [searchValue])
@@ -86,11 +102,19 @@ const App = () => {
     getMoviesList(searchValue, currentPage)
   }, [currentPage])
 
+  useEffect(() => {
+    getRatedMovies(sessionStorage.getItem('guestId'), ratedCurrentPage)
+  }, [rateValue])
+
+  useEffect(() => {
+    getRatedMovies(sessionStorage.getItem('guestId'), ratedCurrentPage)
+  }, [ratedCurrentPage])
+
   const spin =
     dataLoading && searchValue.length !== 0 ? (
       <Spin size="large" style={{ marginTop: '150px' }} />
     ) : (
-      <ItemList movies={movies} genres={genres} rateMovie={setMovieRating} />
+      <ItemList movies={movies} genres={genres} rateMovie={setMovieRating} rateValue={rateValue.value} />
     )
   const empty =
     movies.length === 0 && !dataLoading ? (
@@ -110,9 +134,8 @@ const App = () => {
       banner={true}
     />
   )
-
   return (
-    <Fragment>
+    <>
       <Online>
         <div className="wrapper">
           <Layout>
@@ -121,13 +144,38 @@ const App = () => {
                 <TabPane className="wrapper__tab" tab="Search" key="1">
                   <SearchBar searchValue={searchMovieCallback} />
                   <Space direction="vertical" align="center">
+                    {/* Movie =`ID: {rateValue.id} and Value: {rateValue.value}` */}
                     {spin}
                     {empty}
                     {pagination}
                   </Space>
                 </TabPane>
                 <TabPane tab="Rated" key="2">
-                  2nd TAB PANE Content
+                  <Space direction="vertical" align="center">
+                    {/* <div>
+                      Movie =`ID: {rateValue.id} and Value: {rateValue.value}`
+                    </div> */}
+                    {dataLoading && searchValue.length !== 0 ? (
+                      <Spin size="large" style={{ marginTop: '150px' }} />
+                    ) : (
+                      <ItemList
+                        movies={ratedMovies}
+                        genres={genres}
+                        rateMovie={setMovieRating}
+                        rateValue={rateValue.value}
+                      />
+                    )}
+                    {movies.length === 0 && !dataLoading ? (
+                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Rated Movies" />
+                    ) : null}
+                    {movies.length !== 0 && !dataLoading ? (
+                      <PaginationSlider
+                        total={ratedTotalItems}
+                        currentPage={ratedCurrentPage}
+                        setCurrentPage={setRatedCurrentPage}
+                      />
+                    ) : null}
+                  </Space>
                 </TabPane>
               </Tabs>
             </Content>
@@ -135,7 +183,7 @@ const App = () => {
         </div>
       </Online>
       <Offline>{internetProblem}</Offline>
-    </Fragment>
+    </>
   )
 }
 export default App
