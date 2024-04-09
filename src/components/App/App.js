@@ -10,7 +10,6 @@ import SearchBar from '../SearchBar/SearchBar'
 import ItemList from '../ItemList/ItemList'
 import PaginationSlider from '../PaginationSlider/PaginationSlider'
 
-const { TabPane } = Tabs
 const { Content } = Layout
 
 const movieService = new MovieService()
@@ -29,9 +28,8 @@ const App = () => {
   const [searchValue, setSearchValue] = useState('')
 
   const [guestSession, setGuestSession] = useState('')
-  const [rateValue, setRateValue] = useState({})
-
-  console.log(movies)
+  const [rating, setRating] = useState([])
+  const rateValue = JSON.parse(sessionStorage.getItem('rateValue'))
   const handleSearch = (e) => {
     setSearchValue(e.target.value)
   }
@@ -68,7 +66,6 @@ const App = () => {
       getRatedMovies(guestSession)
     }
     setDataLoading(false)
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
   const getGuestSession = async () => {
@@ -89,38 +86,53 @@ const App = () => {
     setRatedCurrentPage(ratedMovies.page)
   }
 
-  const setMovieRating = async (id = 0, value = 0) => {
-    const movieRating = await movieService.setMovieRating(id, guestSession, value)
-    console.log(movieRating)
-    setRateValue({ id: id, value: value })
+  const deleteRatedMovies = async (id, guestId = guestSession) => {
+    const rateValue = JSON.parse(sessionStorage.getItem('rateValue'))
+    const deleteMovieRating = await movieService.deleteMovieRating(id, guestId)
+    rateValue
+      ? sessionStorage.setItem('rateValue', JSON.stringify([...rateValue, { id, value: 0 }]))
+      : sessionStorage.setItem('rateValue', JSON.stringify([{ id, value: 0 }]))
+    setRating(JSON.parse(sessionStorage.getItem('rateValue')))
+    console.log(deleteMovieRating)
   }
 
-  const deleteRatedMovies = async (id = 0, guestId = guestSession) => {
-    const deleteMovieRating = await movieService.deleteMovieRating(id, guestId)
-    console.log(deleteMovieRating)
+  const setMovieRating = async (id, value) => {
+    const rateValue = JSON.parse(sessionStorage.getItem('rateValue'))
+    const movieRating = await movieService.setMovieRating(id, guestSession, value)
+    rateValue
+      ? sessionStorage.setItem('rateValue', JSON.stringify([...rateValue, { id, value }]))
+      : sessionStorage.setItem('rateValue', JSON.stringify([{ id, value }]))
+    setRating(JSON.parse(sessionStorage.getItem('rateValue')))
+    console.log(movieRating)
   }
 
   const searchMovieCallback = useMemo(() => debounce(handleSearch, 1000), [])
 
   useEffect(() => {
     getMoviesList(searchValue, 1)
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }, [searchValue])
 
   useEffect(() => {
     getMoviesList(searchValue, currentPage)
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }, [currentPage])
+
+  useEffect(() => {
+    getMoviesList(searchValue, currentPage)
+  }, [rating.length])
+
+  useEffect(() => {
+    if (guestSession) {
+      getRatedMovies(guestSession, ratedCurrentPage)
+    }
+  }, [rating])
 
   useEffect(() => {
     if (guestSession) {
       getRatedMovies(guestSession, ratedCurrentPage)
     }
   }, [!dataLoading])
-
-  useEffect(() => {
-    if (guestSession) {
-      getRatedMovies(guestSession, ratedCurrentPage)
-    }
-  }, [rateValue])
 
   useEffect(() => {
     if (guestSession) {
@@ -134,10 +146,10 @@ const App = () => {
     ) : (
       <ItemList
         movies={movies}
+        ratedMovies={ratedMovies}
         genres={genres}
         rateMovie={setMovieRating}
         deleteMovie={deleteRatedMovies}
-        rateValue={rateValue.value}
       />
     )
   const empty =
@@ -158,50 +170,75 @@ const App = () => {
       banner={true}
     />
   )
+  const items = [
+    {
+      key: '1',
+      label: 'Search',
+      children: (
+        <div className="wrapper__tab">
+          <SearchBar searchValue={searchMovieCallback} />
+          <Space direction="vertical" align="center">
+            {spin}
+            {empty}
+            {pagination}
+          </Space>
+        </div>
+      ),
+    },
+    {
+      key: '2',
+      label: 'Rated',
+      children: (
+        <div className="wrapper__tab">
+          <Space direction="vertical" align="center">
+            {dataLoading && !ratedMovies ? (
+              <Spin size="large" style={{ marginTop: '150px' }} />
+            ) : (
+              <ItemList
+                movies={ratedMovies}
+                genres={genres}
+                rateMovie={setMovieRating}
+                deleteMovie={deleteRatedMovies}
+                rateValue={rateValue}
+              />
+            )}
+            {(!ratedMovies && !dataLoading) || (ratedMovies && ratedMovies.length === 0) ? (
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Rated Movies" />
+            ) : null}
+            {ratedMovies && ratedMovies.length >= 1 ? (
+              <PaginationSlider
+                total={ratedTotalItems}
+                currentPage={ratedCurrentPage}
+                setCurrentPage={setRatedCurrentPage}
+              />
+            ) : null}
+          </Space>
+        </div>
+      ),
+    },
+  ]
   return (
     <>
       <Online>
         <div className="wrapper">
           <Layout>
             <Content>
-              <Tabs defaultActiveKey="1" centered>
-                <TabPane className="wrapper__tab" tab="Search" key="1">
-                  <SearchBar searchValue={searchMovieCallback} />
-                  <Space direction="vertical" align="center">
-                    {/* Movie =`ID: {rateValue.id} and Value: {rateValue.value}` */}
-                    {spin}
-                    {empty}
-                    {pagination}
-                  </Space>
-                </TabPane>
-                <TabPane className="wrapper__tab" tab="Rated" key="2">
-                  <Space direction="vertical" align="center">
-                    {/* <div>
-                      Movie =`ID: {rateValue.id} and Value: {rateValue.value}`
-                    </div> */}
-                    {dataLoading && !ratedMovies ? (
-                      <Spin size="large" style={{ marginTop: '150px' }} />
-                    ) : (
-                      <ItemList
-                        movies={ratedMovies}
-                        genres={genres}
-                        rateMovie={setMovieRating}
-                        rateValue={rateValue.value}
-                      />
-                    )}
-                    {(!ratedMovies && !dataLoading) || (ratedMovies && ratedMovies.length === 0) ? (
-                      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No Rated Movies" />
-                    ) : null}
-                    {ratedMovies && ratedMovies.length >= 1 ? (
-                      <PaginationSlider
-                        total={ratedTotalItems}
-                        currentPage={ratedCurrentPage}
-                        setCurrentPage={setRatedCurrentPage}
-                      />
-                    ) : null}
-                  </Space>
-                </TabPane>
-              </Tabs>
+              <Tabs
+                defaultActiveKey="1"
+                centered
+                items={items}
+                onChange={(cb) => {
+                  if (+cb === 2) {
+                    if (guestSession) {
+                      getRatedMovies(guestSession, 1)
+                    }
+                  } else {
+                    if (guestSession) {
+                      getPopularMovies()
+                    }
+                  }
+                }}
+              ></Tabs>
             </Content>
           </Layout>
         </div>

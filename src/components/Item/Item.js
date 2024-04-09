@@ -1,11 +1,10 @@
 import React from 'react'
-import { Card, Typography, Tag } from 'antd'
+import { Card, Typography, Tag, Rate } from 'antd'
 
 import './Item.css'
-import Rating from '../Rating/Rating'
 
 const { Text } = Typography
-const Item = ({ movie, img, date, popularity, description, genres = [], rateMovie }) => {
+const Item = ({ movie, img, date, popularity, description, genres = [], rateMovie, rateValue, deleteMovie }) => {
   const movieGenre = (
     <>
       {genres.map((genre) => {
@@ -41,7 +40,17 @@ const Item = ({ movie, img, date, popularity, description, genres = [], rateMovi
       <div className="title__genre genre">{movieGenre}</div>
 
       <Text className="title__description">{description}</Text>
-      <Rating rateMovie={rateMovie} rating={movie.rating || 0} movieId={movie.id} />
+      <Rate
+        count={10}
+        value={rateValue}
+        onChange={(rate) => {
+          if (rate === 0) {
+            deleteMovie(movie.id)
+          } else {
+            rateMovie(movie.id, rate)
+          }
+        }}
+      />
     </Card>
   )
 }

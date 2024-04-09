@@ -29,13 +29,13 @@ export default class MovieService {
 
   async getRatedMovies(guestSessionToken, pageNumber = 2) {
     const url = `${this.baseUrl}guest_session/${guestSessionToken}/rated/movies?api_key=${this.apiKey}&page=${pageNumber}`
-    const body = await this.getDataFromServer(url)
+    const body = await this.getDataFromServer(url, this.options)
     return body
   }
 
   async guestSession() {
     const url = `${this.baseUrl}authentication/guest_session/new?api_key=${this.apiKey}`
-    const body = await this.getDataFromServer(url)
+    const body = await this.getDataFromServer(url, this.options)
     return body
   }
 
@@ -67,14 +67,14 @@ export default class MovieService {
   }
 
   async getPopularMovies(pageNumber = 1) {
-    const url = `${this.baseUrl}movie/popular?api_key=${this.apiKey}&language=en-US&page=${pageNumber}`
-    const body = await this.getDataFromServer(url)
+    const url = `${this.baseUrl}movie/popular?language=en-US&page=${pageNumber}`
+    const body = await this.getDataFromServer(url, this.options)
     return body
   }
 
   async getGenresList() {
     const url = `${this.baseUrl}genre/movie/list?api_key=${this.apiKey}`
-    const body = await this.getDataFromServer(url)
+    const body = await this.getDataFromServer(url, this.options)
     return body
   }
 }

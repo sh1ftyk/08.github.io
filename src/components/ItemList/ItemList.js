@@ -5,7 +5,7 @@ import Item from '../Item/Item'
 import './ItemList.css'
 import poster from '../../img/noImg.jpg'
 
-const ItemList = ({ movies = [], genres = [], rateMovie }) => {
+const ItemList = ({ movies = [], genres = [], rateMovie, deleteMovie }) => {
   return (
     <div className="card__list">
       {movies.map((movie) => {
@@ -33,6 +33,13 @@ const ItemList = ({ movies = [], genres = [], rateMovie }) => {
             return formatedGenres
           }
         }
+
+        const formatRating = () => {
+          const rateValueStorage = JSON.parse(sessionStorage.getItem('rateValue'))
+          const rating = rateValueStorage?.toReversed()?.find((obj) => obj.id === movie.id)
+          return rating ? rating.value : 0
+        }
+
         const formatImg = (url) => {
           const baseImgUrl = 'https://image.tmdb.org/t/p/w500'
           if (url === null) {
@@ -57,7 +64,6 @@ const ItemList = ({ movies = [], genres = [], rateMovie }) => {
           }
           return popularity.toFixed(1)
         }
-
         return (
           <Item
             key={movie.id}
@@ -68,9 +74,8 @@ const ItemList = ({ movies = [], genres = [], rateMovie }) => {
             genres={formatGenre()}
             popularity={formatPopularity(movie.vote_average)}
             rateMovie={rateMovie}
-            rate={movie.rating}
-            rateValue={movie.rating}
-            movieId={movie.id}
+            deleteMovie={deleteMovie}
+            rateValue={formatRating()}
           />
         )
       })}
