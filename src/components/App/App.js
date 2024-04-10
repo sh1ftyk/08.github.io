@@ -28,8 +28,9 @@ const App = () => {
   const [searchValue, setSearchValue] = useState('')
 
   const [guestSession, setGuestSession] = useState('')
-  const [rating, setRating] = useState([])
+
   const rateValue = JSON.parse(sessionStorage.getItem('rateValue'))
+
   const handleSearch = (e) => {
     setSearchValue(e.target.value)
   }
@@ -63,9 +64,10 @@ const App = () => {
       await getPopularMovies(page)
     }
     if (guestSession) {
-      getRatedMovies(guestSession)
+      await getRatedMovies(guestSession, ratedCurrentPage)
     }
     setDataLoading(false)
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }
 
   const getGuestSession = async () => {
@@ -92,7 +94,6 @@ const App = () => {
     rateValue
       ? sessionStorage.setItem('rateValue', JSON.stringify([...rateValue, { id, value: 0 }]))
       : sessionStorage.setItem('rateValue', JSON.stringify([{ id, value: 0 }]))
-    setRating(JSON.parse(sessionStorage.getItem('rateValue')))
     console.log(deleteMovieRating)
   }
 
@@ -102,7 +103,6 @@ const App = () => {
     rateValue
       ? sessionStorage.setItem('rateValue', JSON.stringify([...rateValue, { id, value }]))
       : sessionStorage.setItem('rateValue', JSON.stringify([{ id, value }]))
-    setRating(JSON.parse(sessionStorage.getItem('rateValue')))
     console.log(movieRating)
   }
 
@@ -110,29 +110,11 @@ const App = () => {
 
   useEffect(() => {
     getMoviesList(searchValue, 1)
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }, [searchValue])
 
   useEffect(() => {
     getMoviesList(searchValue, currentPage)
-    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
   }, [currentPage])
-
-  useEffect(() => {
-    getMoviesList(searchValue, currentPage)
-  }, [rating.length])
-
-  useEffect(() => {
-    if (guestSession) {
-      getRatedMovies(guestSession, ratedCurrentPage)
-    }
-  }, [rating])
-
-  useEffect(() => {
-    if (guestSession) {
-      getRatedMovies(guestSession, ratedCurrentPage)
-    }
-  }, [!dataLoading])
 
   useEffect(() => {
     if (guestSession) {
@@ -230,11 +212,11 @@ const App = () => {
                 onChange={(cb) => {
                   if (+cb === 2) {
                     if (guestSession) {
-                      getRatedMovies(guestSession, 1)
+                      getRatedMovies(guestSession, ratedCurrentPage)
                     }
                   } else {
                     if (guestSession) {
-                      getPopularMovies()
+                      getMoviesList(searchValue, currentPage)
                     }
                   }
                 }}
